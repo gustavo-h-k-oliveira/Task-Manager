@@ -8,6 +8,58 @@ builder.Services.AddControllers();
 
 var app = builder.Build();
 
+// Exception Handling Middleware.
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (Exception ex)
+    {
+        context.Response.StatusCode = 500;
+        await context.Response.WriteAsJsonAsync(new { error = ex.Message });
+    }
+});
+
+// Request Counting Middleware
+int requestCount = 0;
+
+app.Use(async (context, next) =>
+{
+    requestCount++;
+    Console.WriteLine($"Requisição número: {requestCount}");
+    await next();
+});
+
+// Custom Header Middleware.
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Add("TaskManager-Developer", "Gustavo");
+    await next();
+});
+
+//API Key Validation Middleware
+app.Use(async (context, next) =>
+{
+    var apikey = context.Request.Query["apikey"].ToString();
+    if (apikey != "123")
+    {
+        context.Response.StatusCode = 401;
+        await context.Response.WriteAsync("API Key inválida");
+        return;
+    }
+    await next();
+});
+
+// Security Headers Middleware
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.Add("X-Frame-Options", "DENY");
+    await next();
+});
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
