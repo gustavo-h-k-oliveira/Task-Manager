@@ -17,13 +17,13 @@ namespace TaskManager.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Task>>> GetTasks()
+        public async System.Threading.Tasks.Task<ActionResult<IEnumerable<TaskManager.Domain.Entities.Task>>> GetTasks()
         {
             return await _context.Tasks.ToListAsync();
         }
 
         [HttpPost]
-        public async Task<ActionResult<Task>> CreateTask(Task task)
+        public async System.Threading.Tasks.Task<ActionResult<TaskManager.Domain.Entities.Task>> CreateTask(TaskManager.Domain.Entities.Task task)
         {
             _context.Tasks.Add(task);
             await _context.SaveChangesAsync();

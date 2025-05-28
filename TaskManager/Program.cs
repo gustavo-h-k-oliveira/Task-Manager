@@ -43,7 +43,7 @@ app.Use(async (context, next) =>
 // Custom Header Middleware.
 app.Use(async (context, next) =>
 {
-    context.Response.Headers.Add("TaskManager-Developer", "Gustavo");
+    context.Response.Headers["TaskManager-Developer"] = "Gustavo";
     await next();
 });
 
@@ -63,8 +63,8 @@ app.Use(async (context, next) =>
 // Security Headers Middleware
 app.Use(async (context, next) =>
 {
-    context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
-    context.Response.Headers.Add("X-Frame-Options", "DENY");
+    context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    context.Response.Headers["X-Frame-Options"] = "DENY";
     await next();
 });
 
