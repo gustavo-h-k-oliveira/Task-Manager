@@ -29,5 +29,28 @@ namespace TaskManager.Controllers
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(GetTasks), new { id = task.Id }, task);
         }
+
+        [HttpPut("{id}")]
+        public async System.Threading.Tasks.Task<IActionResult> PutTask(int id, TaskManager.Domain.Entities.Task task)
+        {
+            if (id != task.Id)
+                return BadRequest();
+
+            _context.Entry(task).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.Tasks.Any(e => e.Id == id))
+                    return NotFound();
+                else
+                    throw;
+            }
+
+            return Ok(new { message = "Tarefa atualizada com sucesso!" });
+        }
     }
 }
