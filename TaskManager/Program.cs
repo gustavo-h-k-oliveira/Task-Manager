@@ -16,6 +16,13 @@ builder.Services.AddDbContext<TaskManagerDbContext>(options =>
 
 var app = builder.Build();
 
+// Garante que o banco de dados e as tabelas estejam criados e atualizados
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<TaskManagerDbContext>();
+    db.Database.Migrate();
+}
+
 // Exception Handling Middleware.
 app.Use(async (context, next) =>
 {
