@@ -51,7 +51,7 @@ app.Use(async (context, next) =>
 app.Use(async (context, next) =>
 {
     var apikey = context.Request.Query["apikey"].ToString();
-    if (apikey != "123")
+    if (apikey != "123") // ?apikey=123
     {
         context.Response.StatusCode = 401;
         await context.Response.WriteAsync("API Key inválida");
