@@ -1,4 +1,7 @@
+using TaskManager.Application.Services;
+using TaskManager.Domain.Interfaces;
 using TaskManager.Infrastructure.Data;
+using TaskManager.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +16,8 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<TaskManagerDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
+builder.Services.AddScoped<ITaskItemRepository, TaskItemRepository>();
+builder.Services.AddScoped<TaskItemService>();
 
 var app = builder.Build();
 
