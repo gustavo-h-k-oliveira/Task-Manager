@@ -1,56 +1,105 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using TaskManager.Application.Services;
 using TaskManager.Domain.Entities;
-using TaskManager.Infrastructure.Data;
+using TaskManager.DTOs;
 
 namespace TaskManager.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class TasksController : ControllerBase
+    public class TaskItemsController : ControllerBase
     {
-        private readonly TaskManagerDbContext _context;
+        private readonly TaskItemService _service;
 
-        public TasksController(TaskManagerDbContext context)
+        public TaskItemsController(TaskItemService service)
         {
-            _context = context;
+            _service = service;
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<TaskItemDto>> GetTaskById(int id)
+        {
+            var taskItem = await _service.GetTaskByIdAsync(id);
+            if (taskItem == null)
+            {
+                return NotFound();
+            }
+
+            var taskDto = new TaskItemDto
+            {
+                Id = taskItem.Id,
+                Title = taskItem.Title,
+                Description = taskItem.Description ?? string.Empty,
+                IsCompleted = taskItem.IsCompleted
+            };
+
+            return Ok(taskDto);
         }
 
         [HttpGet]
-        public async System.Threading.Tasks.Task<ActionResult<IEnumerable<TaskManager.Domain.Entities.Task>>> GetTasks()
+        public async Task<ActionResult<IEnumerable<TaskItemDto>>> GetAllTasks()
         {
-            return await _context.Tasks.ToListAsync();
+            var tasks = await _service.GetAllTasksAsync();
+            var taskDtos = tasks.Select(task => new TaskItemDto
+            {
+                Id = task.Id,
+                Title = task.Title,
+                Description = task.Description ?? string.Empty,
+                IsCompleted = task.IsCompleted
+            });
+            return Ok(taskDtos);
         }
 
         [HttpPost]
-        public async System.Threading.Tasks.Task<ActionResult<TaskManager.Domain.Entities.Task>> CreateTask(TaskManager.Domain.Entities.Task task)
+        public async Task<ActionResult<TaskItemDto>> CreateTask(CreateTaskItemDto createDto)
+
         {
-            _context.Tasks.Add(task);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetTasks), new { id = task.Id }, task);
+            var taskItem = new TaskItem
+            {
+                Title = createDto.Title,
+                Description = createDto.Description,
+                IsCompleted = false
+            };
+
+            await _service.CreateTaskAsync(taskItem);
+
+            var taskDto = new TaskItemDto
+            {
+                Id = taskItem.Id,
+                Title = taskItem.Title,
+                Description = taskItem.Description,
+                IsCompleted = taskItem.IsCompleted
+            };
+
+            return CreatedAtAction(nameof(GetTaskById), new { id = taskItem.Id }, taskDto);
+
         }
 
         [HttpPut("{id}")]
-        public async System.Threading.Tasks.Task<IActionResult> PutTask(int id, TaskManager.Domain.Entities.Task task)
+        public async Task<IActionResult> UpdateTaskItem(int id, UpdateTaskItemDto updateDto)
         {
-            if (id != task.Id)
-                return BadRequest();
+            var existingTask = await _service.GetTaskByIdAsync(id);
 
-            _context.Entry(task).State = EntityState.Modified;
-
-            try
+            if (existingTask == null)
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.Tasks.Any(e => e.Id == id))
-                    return NotFound();
-                else
-                    throw;
+                return NotFound();
             }
 
-            return Ok(new { message = "Tarefa atualizada com sucesso!" });
+            existingTask.Title = updateDto.Title;
+            existingTask.Description = updateDto.Description;
+            existingTask.IsCompleted = updateDto.IsCompleted;
+
+            await _service.UpdateTaskAsync(existingTask);
+
+            return NoContent(); // 204
+        }
+
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteTask(int id)
+        {
+            await _service.DeleteTaskAsync(id);
+            return NoContent();
         }
     }
 }
