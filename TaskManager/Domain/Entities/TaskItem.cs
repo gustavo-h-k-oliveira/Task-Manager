@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace TaskManager.Domain.Entities
 {
     public class TaskItem

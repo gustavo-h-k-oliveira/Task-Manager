@@ -27,14 +27,19 @@ namespace TaskManager.Application.Services
             return await _repository.AddAsync(taskItem);
         }
 
-        public async Task UpdateTaskAsync(TaskItem taskItem)
+        public async Task UpdateTaskAsync(TaskItem taskItem, UpdateTaskItemDto dto)
         {
+            taskItem.Title = dto.Title;
+            taskItem.Description = dto.Description;
+            taskItem.IsCompleted = dto.IsCompleted;
+
             await _repository.UpdateAsync(taskItem);
         }
 
-        public async Task DeleteTaskAsync(int id)
+
+        public async Task DeleteTaskAsync(TaskItem taskItem)
         {
-            await _repository.DeleteAsync(id);
+            await _repository.DeleteAsync(taskItem.Id);
         }
     }
 }

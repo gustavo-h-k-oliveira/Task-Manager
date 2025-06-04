@@ -33,7 +33,13 @@ namespace TaskManager.Infrastructure.Repositories
 
         public async Task UpdateAsync(TaskItem taskItem)
         {
-            _context.Entry(taskItem).State = EntityState.Modified;
+            _context.TaskItems.Update(taskItem);
+            await _context.SaveChangesAsync();
+        }
+        
+        public async Task DeleteAsync(TaskItem taskItem)
+        {
+            _context.TaskItems.Remove(taskItem);
             await _context.SaveChangesAsync();
         }
 

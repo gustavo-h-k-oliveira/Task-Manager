@@ -51,9 +51,11 @@ namespace TaskManager.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<TaskItemDto>> CreateTask(CreateTaskItemDto createDto)
-
+        public async Task<ActionResult<TaskItemDto>> CreateTask([FromBody] CreateTaskItemDto createDto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var taskItem = new TaskItem
             {
                 Title = createDto.Title,
@@ -76,29 +78,37 @@ namespace TaskManager.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTaskItem(int id, UpdateTaskItemDto updateDto)
+        public async Task<IActionResult> UpdateTaskItem(int id, [FromBody] UpdateTaskItemDto dto)
         {
-            var existingTask = await _service.GetTaskByIdAsync(id);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-            if (existingTask == null)
+            var task = await _service.GetTaskByIdAsync(id);
+
+            if (task == null)
             {
                 return NotFound();
             }
 
-            existingTask.Title = updateDto.Title;
-            existingTask.Description = updateDto.Description;
-            existingTask.IsCompleted = updateDto.IsCompleted;
+            await _service.UpdateTaskAsync(task, dto);
 
-            await _service.UpdateTaskAsync(existingTask);
-
-            return NoContent(); // 204
+            return NoContent();
         }
 
-
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTask(int id)
+        public async Task<IActionResult> DeleteTaskItem(int id)
         {
-            await _service.DeleteTaskAsync(id);
+            var task = await _service.GetTaskByIdAsync(id);
+
+            if (task == null)
+            {
+                return NotFound();
+            }
+
+            await _service.DeleteTaskAsync(task);
+
             return NoContent();
         }
     }
